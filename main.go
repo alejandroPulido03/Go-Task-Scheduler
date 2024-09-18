@@ -1,8 +1,8 @@
 package main
 
 import (
+	"task-scheduler/adapters/in/api/routes"
 	"task-scheduler/core"
-	"task-scheduler/routes"
 
 	"github.com/labstack/echo"
 )
