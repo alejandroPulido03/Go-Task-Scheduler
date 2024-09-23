@@ -1,16 +1,18 @@
 package main
 
 import (
-	"task-scheduler/adapters/in/api/routes"
-	"task-scheduler/core"
-
-	"github.com/labstack/echo"
+	setup "task-scheduler/app/services_setup"
+	"task-scheduler/server"
 )
 
 func main() {
-	e := echo.New()
-	core.RegisterRoutes(e, routes.Routes)
 
-	e.Start(":8080")
+	server.NewServer()
+
+	setup.SetupCreateTaskService()
+
+	server.StartServer()
+
+	
   
 }
