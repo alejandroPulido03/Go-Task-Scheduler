@@ -3,7 +3,7 @@ package setup
 import (
 	"task-scheduler/adapters/in/api/services"
 	"task-scheduler/adapters/out/db"
-	create_task "task-scheduler/app/logic/create-task"
+	create_task "task-scheduler/app/logic/create_task"
 )
 
 func SetupCreateTaskService() {

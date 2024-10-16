@@ -2,8 +2,8 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	dtos "task-scheduler/adapters/DTOs"
 	"task-scheduler/app/entities"
 
 	"github.com/redis/go-redis/v9"
@@ -27,13 +27,18 @@ func NewRedisRepository() *RedisRepository {
 }
 
 func (r *RedisRepository) Save(task entities.Task) error{
-	data, err := json.Marshal(task)
+	dto := dtos.TaskDTO{
+		Entity: task,
+	}
+	
+	data, err := dto.ToJson()
 
 	if err != nil {
 		return err
 	}
 	
-	err = r.client.JSONSet(r.ctx, task.Exp_time, "$", data).Err()
+	err = r.client.SAdd(r.ctx, task.Exp_time.String(), data).Err()
+	
 	
 	fmt.Println("Task saved to redis")
 	if err != nil {

@@ -3,7 +3,7 @@ package services
 import (
 	"task-scheduler/adapters/in/api/core"
 	"task-scheduler/adapters/in/api/core/interfaces"
-	create_task "task-scheduler/app/logic/create-task"
+	create_task "task-scheduler/app/logic/create_task"
 	"task-scheduler/server"
 )
 
