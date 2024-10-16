@@ -16,14 +16,14 @@ type TaskService struct{
 func (ts TaskService) createTaskHandler(c echo.Context) error {
 	
 	t := dto.TaskDTO{
-		JSON: dto.TaskJSON{},
+		JSON: &dto.TaskJSON{},
 	}
 
 
 	if err := c.Bind(t.JSON); err != nil {
-		return err
+		return c.JSON(http.StatusBadRequest, core.ErrorMessage(err))
 	}
-	task, err := t.ToEntity();	
+	task, err := t.ToEntity();
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, core.ErrorMessage(err))
 	}

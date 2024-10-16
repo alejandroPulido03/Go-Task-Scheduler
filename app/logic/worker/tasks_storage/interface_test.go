@@ -11,9 +11,12 @@ func TestTaskTreapAddTask(t *testing.T) {
 	treap := NewTaskTreapStorage()
 
 	task := &entities.Task{Exp_time: baseTime}
-	treap.AddTask(task)
+	err := treap.AddTask(task)
+	if err != nil {
+		t.Fatalf("Failed to add task: %v", err)
+	}
 
-	if treap.SearchTask(task) == nil {
+	if task, err := treap.SearchTask(task); err != nil || task == nil {
 		t.Error("Task was not added successfully.")
 	}
 }
@@ -25,30 +28,22 @@ func TestTaskTreapPopNextTask(t *testing.T) {
 	task1 := &entities.Task{Exp_time: baseTime}
 	task2 := &entities.Task{Exp_time: baseTime.Add(time.Minute)}
 
-	treap.AddTask(task1)
-	treap.AddTask(task2)
+	err := treap.AddTask(task1)
+	if err != nil {
+		t.Fatalf("Failed to add task1: %v", err)
+	}
+	err = treap.AddTask(task2)
+	if err != nil {
+		t.Fatalf("Failed to add task2: %v", err)
+	}
 
-	poppedTask := treap.PopNextTask()
+	poppedTask, err := treap.PopNextTask()
+	if err != nil {
+		t.Fatalf("Failed to pop next task: %v", err)
+	}
 
 	if poppedTask != task1 {
 		t.Errorf("Expected %v, but got %v", task1, poppedTask)
-	}
-}
-
-func TestTaskTreapSeekNextTaskTime(t *testing.T) {
-	baseTime := time.Date(2023, 10, 1, 0, 0, 0, 0, time.UTC)
-	treap := NewTaskTreapStorage()
-
-	task1 := &entities.Task{Exp_time: baseTime}
-	task2 := &entities.Task{Exp_time: baseTime.Add(time.Minute)}
-
-	treap.AddTask(task1)
-	treap.AddTask(task2)
-
-	nextTaskTime := treap.SeekNextTaskTime()
-
-	if nextTaskTime != baseTime {
-		t.Errorf("Expected next task time %v, but got %v", baseTime, nextTaskTime)
 	}
 }
 
@@ -59,10 +54,19 @@ func TestTaskTreapPopLastTask(t *testing.T) {
 	task1 := &entities.Task{Exp_time: baseTime}
 	task2 := &entities.Task{Exp_time: baseTime.Add(time.Minute)}
 
-	treap.AddTask(task1)
-	treap.AddTask(task2)
+	err := treap.AddTask(task1)
+	if err != nil {
+		t.Fatalf("Failed to add task1: %v", err)
+	}
+	err = treap.AddTask(task2)
+	if err != nil {
+		t.Fatalf("Failed to add task2: %v", err)
+	}
 
-	poppedTask := treap.PopLastTask()
+	poppedTask, err := treap.PopLastTask()
+	if err != nil {
+		t.Fatalf("Failed to pop last task: %v", err)
+	}
 
 	if poppedTask != task2 {
 		t.Errorf("Expected %v, but got %v", task2, poppedTask)
@@ -77,19 +81,72 @@ func TestTaskTreapMinMax(t *testing.T) {
 	task2 := &entities.Task{Exp_time: baseTime.Add(time.Minute)}
 	task3 := &entities.Task{Exp_time: baseTime.Add(2 * time.Minute)}
 
-	treap.AddTask(task1)
-	treap.AddTask(task2)
-	treap.AddTask(task3)
+	err := treap.AddTask(task1)
+	if err != nil {
+		t.Fatalf("Failed to add task1: %v", err)
+	}
+	err = treap.AddTask(task2)
+	if err != nil {
+		t.Fatalf("Failed to add task2: %v", err)
+	}
+	err = treap.AddTask(task3)
+	if err != nil {
+		t.Fatalf("Failed to add task3: %v", err)
+	}
 
 	// Verificamos el mínimo
-	minTask := treap.Min()
+	minTask, err := treap.Min()
+	if err != nil {
+		t.Fatalf("Failed to get min task: %v", err)
+	}
 	if minTask != task1 {
 		t.Errorf("Expected min task %v, but got %v", task1, minTask)
 	}
 
 	// Verificamos el máximo
-	maxTask := treap.Max()
+	maxTask, err := treap.Max()
+	if err != nil {
+		t.Fatalf("Failed to get max task: %v", err)
+	}
 	if maxTask != task3 {
 		t.Errorf("Expected max task %v, but got %v", task3, maxTask)
 	}
 }
+
+func TestTaskTreapReplaceLastTask(t *testing.T) {
+	baseTime := time.Date(2023, 10, 1, 0, 0, 0, 0, time.UTC)
+	treap := NewTaskTreapStorage()
+
+	task1 := &entities.Task{Exp_time: baseTime}
+	task2 := &entities.Task{Exp_time: baseTime.Add(time.Minute)}
+	newTask := &entities.Task{Exp_time: baseTime.Add(2 * time.Minute)}
+
+	err := treap.AddTask(task1)
+	if err != nil {
+		t.Fatalf("Failed to add task1: %v", err)
+	}
+	err = treap.AddTask(task2)
+	if err != nil {
+		t.Fatalf("Failed to add task2: %v", err)
+	}
+
+	replacedTask, err := treap.ReplaceLastTask(newTask)
+	if err != nil {
+		t.Fatalf("Failed to replace last task: %v", err)
+	}
+
+	if replacedTask != task2 {
+		t.Errorf("Expected replaced task %v, but got %v", task2, replacedTask)
+	}
+
+	// Verify the new task is now the last task
+	maxTask, err := treap.Max()
+	if err != nil {
+		t.Fatalf("Failed to get max task: %v", err)
+	}
+	if maxTask != newTask {
+		t.Errorf("Expected max task %v, but got %v", newTask, maxTask)
+	}
+}
+
+

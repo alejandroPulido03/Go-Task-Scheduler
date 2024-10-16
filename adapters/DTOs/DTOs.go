@@ -17,18 +17,18 @@ type TaskJSON struct {
 }
 
 type TaskDTO struct {
-	JSON TaskJSON
-	Entity entities.Task
+	JSON *TaskJSON
+	Entity *entities.Task
 }
 
-func (t *TaskDTO) ToEntity() (entities.Task, error){
-	exp_time, err := time.Parse(time.UnixDate, t.JSON.Exp_time)
+func (t *TaskDTO) ToEntity() (*entities.Task, error){
+	exp_time, err := time.Parse(time.RFC1123, t.JSON.Exp_time)
 	
 	if err != nil{
-		return entities.Task{}, err
+		return &entities.Task{}, err
 	}
 
-	return entities.Task{
+	return &entities.Task{
 		Url: t.JSON.Url,
 		Method: t.JSON.Method,
 		Payload: t.JSON.Payload,
@@ -40,7 +40,7 @@ func (t *TaskDTO) ToEntity() (entities.Task, error){
 }
 
 func (t *TaskDTO) ToJson() ([]byte, error){
-	t.JSON = TaskJSON{
+	t.JSON = &TaskJSON{
 		Url: t.Entity.Url,
 		Method: t.Entity.Method,
 		Payload: t.Entity.Payload,

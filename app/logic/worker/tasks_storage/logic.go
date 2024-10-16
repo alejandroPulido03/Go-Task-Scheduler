@@ -9,6 +9,7 @@ type TaskTreap struct {
 	root *taskNode
 	minNode *taskNode
 	maxNode *taskNode
+	size int
 }
 
 type taskNode struct {
@@ -62,6 +63,7 @@ func (t *TaskTreap) insert(task *entities.Task){
 		}
 		t.dive(t.root, new_node)
 	}
+	t.size++
 }
 
 func (t *TaskTreap) search(task *entities.Task) *taskNode{
@@ -99,10 +101,7 @@ func (t *TaskTreap) delete(task *entities.Task){
 			node.parent.right = nil
 		}
 	}
-}
-
-func (t *TaskTreap) GetRoot() *taskNode{
-	return t.root
+	t.size--
 }
 
 
@@ -210,6 +209,7 @@ func compare (task_a *entities.Task, task_b *entities.Task) int{
 	}else{
 		return 0
 	}
+	// TODO: Implement task priority comparison to break ties
 	
 }
 
