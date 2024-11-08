@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"task-scheduler/app/entities"
 	"task-scheduler/app/generic_ports"
-	task_storage "task-scheduler/app/logic/worker/tasks_storage"
+	task_storage "task-scheduler/app/logic/tasks_storage"
 )
 
 
@@ -43,7 +43,7 @@ func (c *CreateTaskHandler) CreateTask(task *entities.Task) (*entities.Task, err
 	return &entities.Task{}, err
 }
 
-func NewCreateTaskService(repository generic_ports.TaskRepository) *CreateTaskHandler {
+func NewCreateTaskService(repository generic_ports.TaskRepository, storage task_storage.TaskTreap) *CreateTaskHandler {
 	max_in_memory_tasks, err := strconv.Atoi(os.Getenv("MAX_IN_MEMORY_TASKS"))
 	if err != nil {
 		max_in_memory_tasks = 1000
@@ -51,7 +51,7 @@ func NewCreateTaskService(repository generic_ports.TaskRepository) *CreateTaskHa
 
 	return &CreateTaskHandler{
 		repository: repository,
-		task_store: task_storage.NewTaskTreapStorage(),
+		task_store: storage,
 		MAX_IN_MEMORY_TASKS: max_in_memory_tasks,
 	}
 }

@@ -1,7 +1,7 @@
 package main
 
 import (
-	setup "task-scheduler/app/services_setup"
+	setup "task-scheduler/app"
 	"task-scheduler/server"
 )
 

@@ -10,4 +10,5 @@ type Task struct {
 	Exp_time time.Time
 	Client_id string
 	Web_hook string
+	Uuid string
 }

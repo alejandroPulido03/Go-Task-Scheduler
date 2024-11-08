@@ -37,11 +37,13 @@ func NewRedisRepository() *RedisRepository {
 }
 
 func (r *RedisRepository) Save(task *entities.Task) error{
+	
 	dto := dtos.TaskDTO{
 		Entity: task,
 	}
 	
 	data, err := dto.ToJson()
+	
 
 	if err != nil {
 		return err

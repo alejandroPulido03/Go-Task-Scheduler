@@ -14,6 +14,7 @@ type TaskJSON struct {
 	Exp_time string `json:"exp_time"`
 	Client_id string `json:"client_id"`
 	Web_hook string `json:"web_hook"`
+	Uuid string `json:"uuid"`
 }
 
 type TaskDTO struct {
@@ -36,6 +37,7 @@ func (t *TaskDTO) ToEntity() (*entities.Task, error){
 		Exp_time: exp_time,
 		Client_id: t.JSON.Client_id,
 		Web_hook: t.JSON.Web_hook,
+		Uuid: t.JSON.Uuid,
 	}, nil
 }
 
@@ -48,6 +50,7 @@ func (t *TaskDTO) ToJson() ([]byte, error){
 		Exp_time: t.Entity.Exp_time.String(),
 		Client_id: t.Entity.Client_id,
 		Web_hook: t.Entity.Web_hook,
+		Uuid: t.Entity.Uuid,
 	}
 	return json.Marshal(t.JSON)
 }
