@@ -1,4 +1,4 @@
-package task_storage
+package mem_storage
 
 import (
 	"fmt"

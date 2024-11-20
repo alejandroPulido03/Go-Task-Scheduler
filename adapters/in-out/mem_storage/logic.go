@@ -1,4 +1,4 @@
-package task_storage
+package mem_storage
 
 import (
 	"math/rand"
@@ -22,24 +22,32 @@ type taskNode struct {
 }
 
 func (t *TaskTreap) min() *entities.Task{
-	if t.minNode == nil{
-		node := t.root
-		for node.left != nil{
-			node = node.left
-		}
-		t.minNode = node
+	
+	node := t.root
+	for node != nil && node.left != nil{
+		node = node.left
 	}
+	t.minNode = node
+	
+	if t.minNode == nil{
+		return nil
+	}
+
 	return t.minNode.task
 }
 
 func (t *TaskTreap) max() *entities.Task{
-	if t.maxNode == nil{
-		node := t.root
-		for node.right != nil{
-			node = node.right
-		}
-		t.maxNode = node
+	
+	node := t.root
+	for node != nil && node.right != nil{
+		node = node.right
 	}
+	t.maxNode = node
+
+	if t.maxNode == nil{
+		return nil
+	}
+
 	return t.maxNode.task
 }
 
@@ -94,14 +102,21 @@ func (t *TaskTreap) delete(task *entities.Task){
 				t.rotateLeft(node.right)
 			}
 		}
-
-		if node.parent.left == node{
-			node.parent.left = nil
-		}else if node.parent.right == node{
-			node.parent.right = nil
+		
+		if node.parent != nil {
+			if node.parent.left == node{
+				node.parent.left = nil
+			}else if node.parent.right == node{
+				node.parent.right = nil
+			}
+		}else {
+			t.root = nil
 		}
+		t.size--
 	}
-	t.size--
+
+	t.min()
+	t.max()
 }
 
 

@@ -1,6 +1,7 @@
-package task_storage
+package mem_storage
 
 import (
+	"fmt"
 	"task-scheduler/app/entities"
 	"testing"
 	"time"
@@ -45,6 +46,39 @@ func TestTaskTreapPopNextTask(t *testing.T) {
 	if poppedTask != task1 {
 		t.Errorf("Expected %v, but got %v", task1, poppedTask)
 	}
+
+	if treap.size != 1 {
+		t.Errorf("Expected size 1, but got %d", treap.size)
+	}
+
+	sec_task, err := treap.PopNextTask()
+	if err != nil {
+		t.Fatalf("Failed to pop next task: %v", err)
+	}
+
+	if sec_task != task2 {
+		fmt.Println(sec_task == task1)
+		t.Errorf("Expected %v, but got %v", task2, sec_task)
+	}
+
+	if treap.size != 0 {
+		t.Errorf("Expected size 0, but got %d", treap.size)
+	}
+
+	no_task, err := treap.PopNextTask()
+	if err != nil {
+		t.Fatalf("Failed to pop next task: %v", err)
+	}
+
+	if no_task != nil {
+		t.Errorf("Expected nil, but got %v", no_task)
+	}
+
+	if treap.size != 0 {
+		t.Errorf("Expected size 0, but got %d", treap.size)
+	}
+
+
 }
 
 func TestTaskTreapPopLastTask(t *testing.T) {

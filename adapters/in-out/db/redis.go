@@ -89,3 +89,8 @@ func (r *RedisRepository) GetByInterval(start string, end string) (entities.Task
 	fmt.Println("Task fetched by interval from redis")
 	return entities.Task{}, nil
 }
+
+func (r *RedisRepository) Remove(task *entities.Task) error{
+	fmt.Println("Task removed from redis")
+	return nil
+}

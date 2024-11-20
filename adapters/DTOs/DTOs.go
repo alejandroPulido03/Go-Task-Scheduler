@@ -9,7 +9,7 @@ import (
 type TaskJSON struct {
 	Url string `json:"url"`
 	Method string `json:"method"`
-	Payload map[string]string `json:"payload"`
+	Payload json.RawMessage `json:"payload"`
 	Headers map[string]string `json:"headers"`
 	Exp_time string `json:"exp_time"`
 	Client_id string `json:"client_id"`

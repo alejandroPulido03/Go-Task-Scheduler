@@ -1,19 +1,24 @@
 package app
 
 import (
+	"task-scheduler/adapters/in-out/db"
+	"task-scheduler/adapters/in-out/mem_storage"
 	"task-scheduler/adapters/in/api/services"
-	"task-scheduler/adapters/out/db"
-	create_task "task-scheduler/app/logic/create_task"
-	task_storage "task-scheduler/app/logic/tasks_storage"
+	"task-scheduler/app/logic/create_task"
 	"task-scheduler/app/logic/worker"
+	"task-scheduler/app/repository"
 )
 
 func SetupCreateTaskService() {
-	db := db.NewRedisRepository()
-	storage := task_storage.NewTaskTreapStorage()
 
-	service := create_task.NewCreateTaskService(db, storage)
-	worker_tasks := worker.NewWorker(storage)
+	//External adapters
+	db := db.NewRedisRepository()
+	storage := mem_storage.NewTaskTreapStorage()
+
+	//Core services
+	repo := repository.NewTaskRepository(db, storage)
+	service := create_task.NewCreateTaskService(repo)
+	worker_tasks := worker.NewWorker(repo)
 	
 	services.CreateTaskAPIService(service)
 	worker_tasks.Run()

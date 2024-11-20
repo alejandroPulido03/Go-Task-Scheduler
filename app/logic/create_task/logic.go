@@ -2,56 +2,30 @@ package create_task
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"task-scheduler/app/entities"
-	"task-scheduler/app/generic_ports"
-	task_storage "task-scheduler/app/logic/tasks_storage"
+	"task-scheduler/app/repository"
 )
 
 
 
-type CreateTaskHandler struct {
-	repository generic_ports.TaskRepository
-	task_store task_storage.TaskTreap
-	MAX_IN_MEMORY_TASKS int
+type TaskHandler struct {
+	task_repo repository.Repository
+	
 }
 
-func (c *CreateTaskHandler) CreateTask(task *entities.Task) (*entities.Task, error) {
+func (c *TaskHandler) CreateTask(task *entities.Task) (*entities.Task, error) {
 
 	fmt.Println("Task created")
 
-	var err error
-
-	if c.task_store.Size() < c.MAX_IN_MEMORY_TASKS {
-		err = c.task_store.AddTask(task)
-		c.repository.SaveRecovery(task)
-	} else if last, max_err := c.task_store.Max(); max_err == nil && task.Exp_time.Before(last.Exp_time) {
-		var last_task *entities.Task
-		last_task, err = c.task_store.ReplaceLastTask(task)
-		if err == nil {
-			err = c.repository.Save(last_task)
-		}
-	} else {
-		err = c.repository.Save(task)
+	err := c.task_repo.Save(task)
+	if err != nil {
+		return &entities.Task{}, err
 	}
 
-	if err == nil {
-		
-		return task, nil
-	}
-	return &entities.Task{}, err
+	return task, nil
 }
 
-func NewCreateTaskService(repository generic_ports.TaskRepository, storage task_storage.TaskTreap) *CreateTaskHandler {
-	max_in_memory_tasks, err := strconv.Atoi(os.Getenv("MAX_IN_MEMORY_TASKS"))
-	if err != nil {
-		max_in_memory_tasks = 1000
-	}
 
-	return &CreateTaskHandler{
-		repository: repository,
-		task_store: storage,
-		MAX_IN_MEMORY_TASKS: max_in_memory_tasks,
-	}
+func NewCreateTaskService(task_repo repository.Repository) *TaskHandler {
+	return &TaskHandler{ task_repo, }
 }
