@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	dtos "task-scheduler/adapters/DTOs"
 	"task-scheduler/app/entities"
@@ -11,7 +12,6 @@ import (
 
 type RedisRepository struct {
 	client *redis.Client
-	recovery *redis.Client
 	ctx context.Context
 }
 
@@ -22,16 +22,9 @@ func NewRedisRepository() *RedisRepository {
         DB:       0, 
     })
 
-	recovery_rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       1, 
-	})
-
 
 	return &RedisRepository{
 		client: rdb,
-		recovery: recovery_rdb,
 		ctx: context.Background(),
 	}
 }
@@ -49,7 +42,11 @@ func (r *RedisRepository) Save(task *entities.Task) error{
 		return err
 	}
 	
-	err = r.client.SAdd(r.ctx, task.Exp_time.String(), data).Err()
+	err = r.client.ZAdd(r.ctx, "tasks", 
+		redis.Z{
+			Member: data,
+			Score: float64(task.Exp_time.Unix()),
+		}).Err()
 	
 	
 	fmt.Println("Task saved to redis")
@@ -70,27 +67,57 @@ func (r *RedisRepository) SaveRecovery(task *entities.Task) error{
 		return err
 	}
 	
-	err = r.recovery.SAdd(r.ctx, task.Exp_time.String(), data).Err()
+	err = r.client.SAdd(r.ctx, "tasks_recovery", data).Err()
 	
 	
-	fmt.Println("Task saved to redis")
+	fmt.Println("Task saved to recovery")
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *RedisRepository) GetByTime(time string) (entities.Task, error){
-	fmt.Println("Task fetched by time from redis")
-	return entities.Task{}, nil
+func (r *RedisRepository) GetFirst() (*entities.Task, error){
+	fmt.Println("Task retrieved from redis")
+
+	task_byte := r.client.ZPopMin(r.ctx, "tasks", 1).Val()
+
+	if len(task_byte) == 0 {
+		return nil, nil
+	}
+	
+	task_json := []byte(task_byte[0].Member.(string))
+
+	dto := dtos.TaskDTO{
+		JSON: &dtos.TaskJSON{},
+	}
+	
+	unm_err := json.Unmarshal(task_json, &dto.JSON)
+
+	if unm_err != nil {
+		return nil, unm_err
+	}
+
+	entity, err := dto.ToEntity()
+
+	if err != nil {
+		return nil, err
+	}
+	
+	return entity, nil
 }
 
-func (r *RedisRepository) GetByInterval(start string, end string) (entities.Task, error){
-	fmt.Println("Task fetched by interval from redis")
-	return entities.Task{}, nil
-}
-
-func (r *RedisRepository) Remove(task *entities.Task) error{
+func (r *RedisRepository) RemoveRecovery(task *entities.Task) error{
 	fmt.Println("Task removed from redis")
-	return nil
+
+	dto := dtos.TaskDTO{
+		Entity: task,
+	}
+	
+	data, err := dto.ToJson()
+	if err != nil {
+		return err
+	}
+
+	return r.client.SRem(r.ctx, "tasks_recovery", data).Err()
 }

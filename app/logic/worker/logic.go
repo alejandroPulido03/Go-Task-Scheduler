@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"task-scheduler/app/entities"
-	"task-scheduler/app/repository"
+	"task-scheduler/app/logic/repository"
 	"time"
 )
 
@@ -20,25 +20,30 @@ func NewWorker(task_repository repository.Repository) *Worker {
 }
 
 func (w *Worker) Run() {
-	go scheduler_tick(w)
+	go schedulerTick(w)
 	fmt.Println("Worker started")
 }
 
-func scheduler_tick(w *Worker) error{
+func schedulerTick(w *Worker) error{
 	var tasks []*entities.Task
 	var ch chan *entities.Task
 	var err error
 	for {
-		if len(tasks) == 0{
-			tasks, ch, err = get_next_tasks(w)
+
+		if first, search_err := w.task_repository.GetFirst(); search_err == nil && first != nil && first.Exp_time.Before(time.Now().Add(1 * time.Minute)){
+			// If there is no tasks in the queue, we will wait for the next task to be executed in the next minute (that need the ban of request of scheduling by less than a minute than the current time)
+
+			tasks, ch, err = getNextTasks(w)
+
 			if err != nil{
 				break
 			}
+		}else if search_err != nil{
+			return search_err
 		}
 
 
 		if len(tasks) != 0{
-			fmt.Println("Next tasks time: ", tasks[0].Exp_time)
 			tasks_time := tasks[0].Exp_time
 			if tasks_time.Before(time.Now()){
 				for i := 0; i < len(tasks); i++{
@@ -52,14 +57,14 @@ func scheduler_tick(w *Worker) error{
 		time.Sleep(1 * time.Second)
 		
 	}
-	fmt.Println("Unexpected end", err)
+
 	return err
 }
 
-func get_next_tasks(w *Worker) ([]*entities.Task, chan *entities.Task,  error){
+func getNextTasks(w *Worker) ([]*entities.Task, chan *entities.Task,  error){
 	next_tasks := make([]*entities.Task, 0)
 	ch := make(chan *entities.Task)
-	t, err := w.task_repository.GetFirst()
+	t, err := w.task_repository.PushFirst()
 	if err != nil{
 		return nil, nil, err
 	}
@@ -68,7 +73,7 @@ func get_next_tasks(w *Worker) ([]*entities.Task, chan *entities.Task,  error){
 		next_tasks = append(next_tasks, t)
 	}
 	for{
-		next_t, err := w.task_repository.GetFirst()
+		next_t, err := w.task_repository.PushFirst()
 		if err != nil{
 			return nil, nil, err
 		}
@@ -81,28 +86,30 @@ func get_next_tasks(w *Worker) ([]*entities.Task, chan *entities.Task,  error){
 	}
 
 	for i := 0; i < len(next_tasks); i++{
-		go make_request(ch, w)
+		go makeRequest(ch, w)
 		
 	}
 
 	return next_tasks, ch, nil
 }
 
-func make_request(ch chan *entities.Task, worker *Worker) error {
+func makeRequest(ch chan *entities.Task, worker *Worker) error {
 	// Request to the server, we could implement pre load of the request for large payloads
 	client := &http.Client{}
 
 	task := <- ch
 	fmt.Println("Task received")
 	// Do something with the task
-	body := bytes.NewReader(task.Payload)
+	body := bytes.NewReader(task.Body)
 	req, err := http.NewRequest(task.Method, task.Url, body)
 	if err != nil{
 		return err
 	}
 
 	for k, v := range task.Headers{
-		req.Header.Add(k, v)
+		for _, h := range v{
+			req.Header.Add(k, h)
+		}
 	}
 
 	resp, err := client.Do(req)
@@ -112,6 +119,7 @@ func make_request(ch chan *entities.Task, worker *Worker) error {
 
 	fmt.Println(task.Exp_time)
 	fmt.Println("response Status:", resp.Status)
+	
 	fmt.Println("response Body:", resp.Body)
 	worker.task_repository.DeleteTask(task)
 	

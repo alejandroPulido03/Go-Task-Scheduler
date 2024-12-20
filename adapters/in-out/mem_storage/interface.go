@@ -8,12 +8,18 @@ func NewTaskTreapStorage() *TaskTreap {
 	return  &TaskTreap{}
 }
 
-func (t * TaskTreap) Min() (*entities.Task, error) {
-	return t.min(), nil
+func (t * TaskTreap) GetFirst() (*entities.Task, error) {
+	if t.minNode == nil {
+		return nil, nil
+	}
+	return t.minNode.task, nil
 }
 
-func (t * TaskTreap) Max() (*entities.Task, error) {
-	return t.max(), nil
+func (t * TaskTreap) GetMax() (*entities.Task, error) {
+	if t.maxNode == nil {
+		return nil, nil
+	}
+	return t.maxNode.task, nil
 }
 
 func (t * TaskTreap) Size() (int, error) {

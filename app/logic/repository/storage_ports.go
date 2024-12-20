@@ -1,4 +1,4 @@
-package generic_ports
+package repository
 
 import "task-scheduler/app/entities"
 
@@ -6,9 +6,8 @@ import "task-scheduler/app/entities"
 type SecondaryStorage interface {
 	Save(*entities.Task) error
 	SaveRecovery(*entities.Task) error
-	GetByTime(time string) (entities.Task, error)
-	GetByInterval(start string, end string) (entities.Task, error)
-	Remove(*entities.Task) error
+	GetFirst() (*entities.Task, error)
+	RemoveRecovery(*entities.Task) error
 }
 
 type MemoryStorage interface {
@@ -19,7 +18,7 @@ type MemoryStorage interface {
 	SearchTask(task *entities.Task) (*entities.Task, error)
 	ReplaceLastTask(task *entities.Task) (*entities.Task, error)
 	Size() (int, error)
-	Min() (*entities.Task, error)
-	Max() (*entities.Task, error)
+	GetFirst() (*entities.Task, error)
+	GetMax() (*entities.Task, error)
 }
 

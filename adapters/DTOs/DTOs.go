@@ -9,8 +9,8 @@ import (
 type TaskJSON struct {
 	Url string `json:"url"`
 	Method string `json:"method"`
-	Payload json.RawMessage `json:"payload"`
-	Headers map[string]string `json:"headers"`
+	Body json.RawMessage `json:"body"`
+	Headers map[string][]string `json:"headers"`
 	Exp_time string `json:"exp_time"`
 	Client_id string `json:"client_id"`
 	Web_hook string `json:"web_hook"`
@@ -32,7 +32,7 @@ func (t *TaskDTO) ToEntity() (*entities.Task, error){
 	return &entities.Task{
 		Url: t.JSON.Url,
 		Method: t.JSON.Method,
-		Payload: t.JSON.Payload,
+		Body: t.JSON.Body,
 		Headers: t.JSON.Headers,
 		Exp_time: exp_time,
 		Client_id: t.JSON.Client_id,
@@ -45,9 +45,9 @@ func (t *TaskDTO) ToJson() ([]byte, error){
 	t.JSON = &TaskJSON{
 		Url: t.Entity.Url,
 		Method: t.Entity.Method,
-		Payload: t.Entity.Payload,
+		Body: t.Entity.Body,
 		Headers: t.Entity.Headers,
-		Exp_time: t.Entity.Exp_time.String(),
+		Exp_time: t.Entity.Exp_time.Local().Format(time.RFC1123),
 		Client_id: t.Entity.Client_id,
 		Web_hook: t.Entity.Web_hook,
 		Uuid: t.Entity.Uuid,

@@ -5,8 +5,8 @@ import (
 	"task-scheduler/adapters/in-out/mem_storage"
 	"task-scheduler/adapters/in/api/services"
 	"task-scheduler/app/logic/create_task"
+	"task-scheduler/app/logic/repository"
 	"task-scheduler/app/logic/worker"
-	"task-scheduler/app/repository"
 )
 
 func SetupCreateTaskService() {

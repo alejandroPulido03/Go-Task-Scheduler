@@ -1,7 +1,6 @@
 package mem_storage
 
 import (
-	"fmt"
 	"task-scheduler/app/entities"
 	"testing"
 	"time"
@@ -57,7 +56,6 @@ func TestTaskTreapPopNextTask(t *testing.T) {
 	}
 
 	if sec_task != task2 {
-		fmt.Println(sec_task == task1)
 		t.Errorf("Expected %v, but got %v", task2, sec_task)
 	}
 
@@ -129,7 +127,7 @@ func TestTaskTreapMinMax(t *testing.T) {
 	}
 
 	// Verificamos el mínimo
-	minTask, err := treap.Min()
+	minTask, err := treap.GetFirst()
 	if err != nil {
 		t.Fatalf("Failed to get min task: %v", err)
 	}
@@ -138,7 +136,7 @@ func TestTaskTreapMinMax(t *testing.T) {
 	}
 
 	// Verificamos el máximo
-	maxTask, err := treap.Max()
+	maxTask, err := treap.GetMax()
 	if err != nil {
 		t.Fatalf("Failed to get max task: %v", err)
 	}
@@ -174,7 +172,7 @@ func TestTaskTreapReplaceLastTask(t *testing.T) {
 	}
 
 	// Verify the new task is now the last task
-	maxTask, err := treap.Max()
+	maxTask, err := treap.GetMax()
 	if err != nil {
 		t.Fatalf("Failed to get max task: %v", err)
 	}
