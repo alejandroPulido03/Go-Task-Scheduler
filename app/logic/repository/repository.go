@@ -19,7 +19,7 @@ type TaskRepository struct {
 	secondary SecondaryStorage
 	main MemoryStorage
 	MAX_IN_MEMORY_TASKS int
-	mu sync.Mutex
+	rw sync.RWMutex
 }
 
 func NewTaskRepository(secondary SecondaryStorage, main MemoryStorage) *TaskRepository {
@@ -35,8 +35,8 @@ func NewTaskRepository(secondary SecondaryStorage, main MemoryStorage) *TaskRepo
 }
 
 func (t *TaskRepository) Save(task *entities.Task) error {
-	t.mu.Lock()
-	defer t.mu.Unlock()
+	t.rw.Lock()
+	defer t.rw.Unlock()
 	return t.save_op(task)
 }
 
@@ -68,22 +68,22 @@ func (t *TaskRepository) save_op(task *entities.Task) error {
 }
 
 func (t *TaskRepository) GetFirst() (*entities.Task, error) {
-	t.mu.Lock()
-	defer t.mu.Unlock()
+	t.rw.RLock()
+	defer t.rw.RUnlock()
 
 	return t.main.GetFirst()
 }
 
 func (t *TaskRepository) PushFirst() (*entities.Task, error) {
-	t.mu.Lock()
-	defer t.mu.Unlock()
+	t.rw.Lock()
+	defer t.rw.Unlock()
 
 	return t.main.PopNextTask()
 }
 
 func (t *TaskRepository) DeleteTask(task *entities.Task) error {
-	t.mu.Lock()
-	defer t.mu.Unlock()
+	t.rw.Lock()
+	defer t.rw.Unlock()
 	
 	err := t.secondary.RemoveRecovery(task)
 	
